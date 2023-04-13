@@ -1,0 +1,1 @@
+CREATE DATABASE sgs_db;
