@@ -74,3 +74,23 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+CREATE TABLE Medicamento(
+	id_medicamento SERIAL,
+	descripcion VARCHAR(30) NOT NULL,
+	
+	PRIMARY KEY(id_medicamento)
+);
+
+CREATE TABLE Inventario_Medicamento(
+	id_centro_medico VARCHAR(5) NOT NULL,
+    id_medicamento INT NOT NULL,
+	disponibilidad INT NOT NULL,
+    fecha_caducidad DATE NOT NULL,
+	
+	PRIMARY KEY(id_centro_medico,id_medicamento),
+	CONSTRAINT fk_centro_medico
+		FOREIGN KEY (id_centro_medico) REFERENCES Centro_Medico(id_centro_medico),
+    CONSTRAINT fk_medicamento
+		FOREIGN KEY (id_medicamento) REFERENCES Medicamento(id_medicamento)
+);
