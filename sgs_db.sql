@@ -127,6 +127,22 @@ CREATE TABLE Enfermedad(
 	PRIMARY KEY(id_enfermedad)
 );
 
+CREATE TABLE Examen(
+	id_examen SERIAL,
+	nombre VARCHAR(100) NOT NULL,
+	informacion TEXT NOT NULL,
+	
+	PRIMARY KEY(id_examen)
+);
+
+CREATE TABLE Cirugia(
+	id_cirugia SERIAL,
+	nombre VARCHAR(100) NOT NULL,
+	descripcion TEXT NOT NULL,
+	
+	PRIMARY KEY(id_cirugia)
+);
+
 CREATE TABLE Incidencia_Historial_Medico(
 	id_incidencia SERIAL,
 	imc FLOAT NOT NULL,
@@ -169,6 +185,17 @@ CREATE TABLE Historial_Adiccion(
 		FOREIGN KEY (id_incidencia) REFERENCES Incidencia_Historial_Medico(id_incidencia),
 	CONSTRAINT fk_adiccion
 		FOREIGN KEY (id_adiccion) REFERENCES Adiccion(id_adiccion)
+);
+
+CREATE TABLE Historial_Examen(
+	id_incidencia INT NOT NULL,
+	id_examen INT NOT NULL,
+
+	PRIMARY KEY(id_incidencia,id_examen),
+	CONSTRAINT fk_incidencia
+		FOREIGN KEY (id_incidencia) REFERENCES Incidencia_Historial_Medico(id_incidencia),
+	CONSTRAINT fk_examen
+		FOREIGN KEY (id_examen) REFERENCES Examen(id_examen)
 );
 
 CREATE TABLE Historial_Tratamiento(
