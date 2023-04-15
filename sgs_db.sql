@@ -24,7 +24,7 @@ CREATE TABLE Estado(
 	id_estado SERIAL,
 	descripcion VARCHAR(20) NOT NULL,
 	
-	PRIMARY KEY(id_estado_paciente)
+	PRIMARY KEY(id_estado)
 );
 
 CREATE TABLE Paciente(
@@ -113,7 +113,68 @@ CREATE TABLE Adiccion(
 	id_adiccion SERIAL,
 	nombre VARCHAR(100) NOT NULL,
 	informacion TEXT NOT NULL,
+	mortalidad INT NOT NULL
 
+	PRIMARY KEY(id_adiccion)
+);
+
+CREATE TABLE Enfermedad(
+	id_enfermedad SERIAL,
+	nombre VARCHAR(100) NOT NULL,
+	informacion TEXT NOT NULL,
+	mortalidad INT NOT NULL
+
+	PRIMARY KEY(id_enfermedad)
+);
+
+CREATE TABLE Incidencia_Historial_Medico(
+	id_incidencia SERIAL,
+	imc FLOAT NOT NULL,
+	altura FLOAT NOT NULL,
+	peso FLOAT NOT NULL,
+	fecha_consulta DATE NOT NULL,
+	hora_consulta TIME NOT NULL,
+	no_paciente INT NOT NULL,
+	no_colegiado VARCHAR(20) NOT NULL,
+	id_centro_medico VARCHAR(5) NOT NULL,
+	evolucion TEXT NOT NULL,
+	resultado_tratamiento BOOLEAN NOT NULL,
+
+	PRIMARY KEY(id_incidencia),
+	CONSTRAINT fk_paciente
+		FOREIGN KEY (no_paciente) REFERENCES Paciente(no_paciente),
+	CONSTRAINT fk_medico
+		FOREIGN KEY (no_colegiado) REFERENCES Medico(no_colegiado),
+	CONSTRAINT fk_centro_medico
+		FOREIGN KEY (id_centro_medico) REFERENCES Centro_Medico(id_centro_medico)
+);
+
+CREATE TABLE Historial_Enfermedad(
+	id_incidencia INT NOT NULL,
+	id_enfermedad INT NOT NULL,
+
+	PRIMARY KEY(id_incidencia,id_enfermedad),
+	CONSTRAINT fk_incidencia
+		FOREIGN KEY (id_incidencia) REFERENCES Incidencia_Historial_Medico(id_incidencia),
+	CONSTRAINT fk_enfermedad
+		FOREIGN KEY (id_enfermedad) REFERENCES Enfermedad(id_enfermedad)
+);
+
+CREATE TABLE Historial_Adiccion(
+	id_incidencia INT NOT NULL,
+	id_adiccion INT NOT NULL,
+
+	PRIMARY KEY(id_incidencia,id_adiccion),
+	CONSTRAINT fk_incidencia
+		FOREIGN KEY (id_incidencia) REFERENCES Incidencia_Historial_Medico(id_incidencia),
+	CONSTRAINT fk_adiccion
+		FOREIGN KEY (id_adiccion) REFERENCES Adiccion(id_adiccion)
+);
+
+CREATE TABLE Historial_Tratamiento(
+	id_incidencia INT NOT NULL,
+	id_medicamento INT NOT NULL,
+	dosis VARCHAR(50)
 );
 
 CREATE TABLE Inventario_Medicamento(
@@ -140,31 +201,11 @@ CREATE TABLE Inventario_Material(
 		FOREIGN KEY (id_material) REFERENCES Material(id_material)
 );
 
-CREATE TABLE Incidencia_Historial_Medico(
-	id_incidencia SERIAL,
-	imc FLOAT NOT NULL,
-	altura FLOAT NOT NULL,
-	peso FLOAT NOT NULL,
-	fecha_consulta DATE NOT NULL,
-	hora_consulta TIME NOT NULL,
-	no_paciente INT NOT NULL,
-	no_colegiado VARCHAR(20) NOT NULL,
-	id_centro_medico VARCHAR(5) NOT NULL,
-
-	PRIMARY KEY(id_incidencia),
-	CONSTRAINT fk_paciente
-		FOREIGN KEY (no_paciente) REFERENCES Paciente(no_paciente),
-	CONSTRAINT fk_medico
-		FOREIGN KEY (no_colegiado) REFERENCES Medico(no_colegiado),
-	CONSTRAINT fk_centro_medico
-		FOREIGN KEY (id_centro_medico) REFERENCES Centro_Medico(id_centro_medico)
-);
-
-CREATE OR REPLACE PROCEDURE createPaciente(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),direccion VARCHAR(100),telefono VARCHAR(10),id_centro_medico VARCHAR(5))
+CREATE OR REPLACE PROCEDURE createPaciente(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),direccion VARCHAR(100),telefono VARCHAR(10),id_centro_medico VARCHAR(5), id_estado INT)
 AS $BODY$
 BEGIN
     INSERT INTO Persona VALUES(cui,nombre,apellidos,direccion,telefono,id_centro_medico);
-	INSERT INTO Paciente(cui) VALUES (cui);
+	INSERT INTO Paciente(cui,id_estado) VALUES (cui,id_estado);
 END;
 $BODY$
 LANGUAGE plpgsql;
