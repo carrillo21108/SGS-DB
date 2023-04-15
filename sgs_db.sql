@@ -198,6 +198,17 @@ CREATE TABLE Historial_Examen(
 		FOREIGN KEY (id_examen) REFERENCES Examen(id_examen)
 );
 
+CREATE TABLE Historial_Cirugia(
+	id_incidencia INT NOT NULL,
+	id_cirugia INT NOT NULL,
+
+	PRIMARY KEY(id_incidencia,id_cirugia),
+	CONSTRAINT fk_incidencia
+		FOREIGN KEY (id_incidencia) REFERENCES Incidencia_Historial_Medico(id_incidencia),
+	CONSTRAINT fk_cirugia
+		FOREIGN KEY (id_cirugia) REFERENCES Cirugia(id_cirugia)
+);
+
 CREATE TABLE Historial_Tratamiento(
 	id_incidencia INT NOT NULL,
 	id_medicamento INT NOT NULL,
