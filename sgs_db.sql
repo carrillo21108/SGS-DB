@@ -56,25 +56,6 @@ CREATE TABLE Medico(
 		FOREIGN KEY (id_especialidad) REFERENCES Especialidad(id_especialidad)
 );
 
-CREATE OR REPLACE PROCEDURE createPaciente(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),direccion VARCHAR(100),telefono VARCHAR(10),id_centro_medico VARCHAR(5))
-AS $BODY$
-BEGIN
-    INSERT INTO Persona VALUES(cui,nombre,apellidos,direccion,telefono,id_centro_medico);
-	INSERT INTO Paciente(cui) VALUES (cui);
-END;
-$BODY$
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE PROCEDURE createMedico(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),direccion VARCHAR(100),telefono VARCHAR(10),
-										 id_centro_medico VARCHAR(5),no_colegiado VARCHAR(20),id_especialidad INT,usuario VARCHAR (10), clave VARCHAR(10))
-AS $BODY$
-BEGIN
-    INSERT INTO Persona VALUES(cui,nombre,apellidos,direccion,telefono,id_centro_medico);
-	INSERT INTO Medico VALUES (no_colegiado,cui,id_especialidad,usuario,clave);
-END;
-$BODY$
-LANGUAGE plpgsql;
-
 CREATE TABLE Medicamento(
 	id_medicamento SERIAL,
 	descripcion VARCHAR(30) NOT NULL,
@@ -87,6 +68,35 @@ CREATE TABLE Material(
 	descripcion VARCHAR(100) NOT NULL,
 	
 	PRIMARY KEY(id_material)
+);
+
+CREATE TABLE Departamento(
+	id_departamento SERIAL,
+	nombre VARCHAR(100) NOT NULL,
+	
+	PRIMARY KEY(id_departamento)
+);
+
+CREATE TABLE Municipio(
+	id_municipio SERIAL,
+	nombre VARCHAR(100) NOT NULL,
+	id_departamento INT NOT NULL,
+	
+	PRIMARY KEY(id_municipio)
+	CONSTRAINT fk_departamento
+		FOREIGN KEY (id_departamento) REFERENCES Departamento(id_departamento)
+);
+
+CREATE TABLE Direccion(
+	id_centro_medico VARCHAR(5) NOT NULL,
+	descripcion VARCHAR(100) NOT NULL,
+	id_municipio INT NOT NULL,
+
+	PRIMARY KEY(id_centro_medico),
+	CONSTRAINT fk_centro_medico
+		FOREIGN KEY (id_centro_medico) REFERENCES Centro_Medico(id_centro_medico),
+	CONSTRAINT fk_municipio
+		FOREIGN KEY (id_municipio) REFERENCES Municipio(id_municipio)
 );
 
 CREATE TABLE Inventario_Medicamento(
@@ -133,6 +143,22 @@ CREATE TABLE Incidencia_Historial_Medico(
 		FOREIGN KEY (id_centro_medico) REFERENCES Centro_Medico(id_centro_medico)
 );
 
-CRE
+CREATE OR REPLACE PROCEDURE createPaciente(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),direccion VARCHAR(100),telefono VARCHAR(10),id_centro_medico VARCHAR(5))
+AS $BODY$
+BEGIN
+    INSERT INTO Persona VALUES(cui,nombre,apellidos,direccion,telefono,id_centro_medico);
+	INSERT INTO Paciente(cui) VALUES (cui);
+END;
+$BODY$
+LANGUAGE plpgsql;
 
+CREATE OR REPLACE PROCEDURE createMedico(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),direccion VARCHAR(100),telefono VARCHAR(10),
+										 id_centro_medico VARCHAR(5),no_colegiado VARCHAR(20),id_especialidad INT,usuario VARCHAR (10), clave VARCHAR(10))
+AS $BODY$
+BEGIN
+    INSERT INTO Persona VALUES(cui,nombre,apellidos,direccion,telefono,id_centro_medico);
+	INSERT INTO Medico VALUES (no_colegiado,cui,id_especialidad,usuario,clave);
+END;
+$BODY$
+LANGUAGE plpgsql;
 
