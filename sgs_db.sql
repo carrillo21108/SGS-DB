@@ -82,6 +82,13 @@ CREATE TABLE Medicamento(
 	PRIMARY KEY(id_medicamento)
 );
 
+CREATE TABLE Material(
+	id_material SERIAL,
+	descripcion VARCHAR(100) NOT NULL,
+	
+	PRIMARY KEY(id_material)
+);
+
 CREATE TABLE Inventario_Medicamento(
 	id_centro_medico VARCHAR(5) NOT NULL,
     id_medicamento INT NOT NULL,
@@ -94,3 +101,25 @@ CREATE TABLE Inventario_Medicamento(
     CONSTRAINT fk_medicamento
 		FOREIGN KEY (id_medicamento) REFERENCES Medicamento(id_medicamento)
 );
+
+CREATE TABLE Inventario_Material(
+	id_centro_medico VARCHAR(5) NOT NULL,
+	id_material INT NOT NULL,
+
+	CONSTRAINT fk_centro_medico
+		FOREIGN KEY (id_centro_medico) REFERENCES Centro_Medico(id_centro_medico),
+	CONSTRAINT fk_material
+		FOREIGN KEY (id_material) REFERENCES Material(id_material)
+);
+
+-- CREATE TABLE Incidencia_Historial_Medico(
+-- 	id_incidencia SERIAL,
+-- 	imc FLOAT NOT NULL,
+-- 	altura FLOAT NOT NULL,
+-- 	peso FLOAT NOT NULL,
+-- 	fecha_consulta DATE NOT NULL,
+-- 	hora_consulta TIME NOT NULL,
+-- 	no_paciente 
+-- );
+
+
