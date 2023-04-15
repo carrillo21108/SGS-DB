@@ -20,11 +20,19 @@ CREATE TABLE Persona(
 		FOREIGN KEY (id_centro_medico) REFERENCES Centro_Medico(id_centro_medico)
 );
 
+CREATE TABLE Estado(
+	id_estado SERIAL,
+	descripcion VARCHAR(20) NOT NULL,
+	
+	PRIMARY KEY(id_estado_paciente)
+);
+
 CREATE TABLE Paciente(
 	no_paciente SERIAL,
 	cui VARCHAR(20) UNIQUE NOT NULL,
 	no_paciente_padre INT,
 	no_paciente_madre INT,
+	id_estado INT NOT NULL,
 	
 	PRIMARY KEY(no_paciente),
 	CONSTRAINT fk_persona
@@ -32,7 +40,9 @@ CREATE TABLE Paciente(
 	CONSTRAINT fk_padre
 		FOREIGN KEY (no_paciente_padre) REFERENCES Paciente(no_paciente),
 	CONSTRAINT fk_madre
-		FOREIGN KEY (no_paciente_madre) REFERENCES Paciente(no_paciente)
+		FOREIGN KEY (no_paciente_madre) REFERENCES Paciente(no_paciente),
+	CONSTRAINT fk_estado_paciente
+		FOREIGN KEY (id_estado) REFERENCES Estado(id_estado)
 );
 
 CREATE TABLE Especialidad(
@@ -82,7 +92,7 @@ CREATE TABLE Municipio(
 	nombre VARCHAR(100) NOT NULL,
 	id_departamento INT NOT NULL,
 	
-	PRIMARY KEY(id_municipio)
+	PRIMARY KEY(id_municipio),
 	CONSTRAINT fk_departamento
 		FOREIGN KEY (id_departamento) REFERENCES Departamento(id_departamento)
 );
@@ -97,6 +107,13 @@ CREATE TABLE Direccion(
 		FOREIGN KEY (id_centro_medico) REFERENCES Centro_Medico(id_centro_medico),
 	CONSTRAINT fk_municipio
 		FOREIGN KEY (id_municipio) REFERENCES Municipio(id_municipio)
+);
+
+CREATE TABLE Adiccion(
+	id_adiccion SERIAL,
+	nombre VARCHAR(100) NOT NULL,
+	informacion TEXT NOT NULL,
+
 );
 
 CREATE TABLE Inventario_Medicamento(
