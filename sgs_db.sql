@@ -145,16 +145,16 @@ CREATE TABLE Cirugia(
 
 CREATE TABLE Incidencia_Historial_Medico(
 	id_incidencia SERIAL,
-	imc FLOAT NOT NULL,
-	altura FLOAT NOT NULL,
-	peso FLOAT NOT NULL,
+	imc NUMERIC(5,2) NOT NULL,
+	altura NUMERIC(5,2) NOT NULL,
+	peso NUMERIC(5,2) NOT NULL,
 	fecha_consulta DATE NOT NULL,
 	hora_consulta TIME NOT NULL,
 	no_paciente INT NOT NULL,
 	no_colegiado VARCHAR(20) NOT NULL,
 	id_centro_medico VARCHAR(5) NOT NULL,
-	evolucion TEXT NOT NULL,
-	resultado_tratamiento BOOLEAN NOT NULL,
+	evolucion TEXT,
+	resultado_tratamiento BOOLEAN,
 
 	PRIMARY KEY(id_incidencia),
 	CONSTRAINT fk_paciente
@@ -258,3 +258,11 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
+CREATE OR REPLACE PROCEDURE createIncidencia(imc NUMERIC(5,2),altura NUMERIC(5,2),peso NUMERIC(5,2),no_paciente INT,no_colegiado VARCHAR(20),id_centro_medico VARCHAR(5))
+AS $BODY$
+BEGIN
+    INSERT INTO Incidencia_Historial_Medico(imc,altura,peso,fecha_consulta,hora_consulta,no_paciente,no_colegiado,id_centro_medico)
+	VALUES (imc,altura,peso,(NOW()::DATE),(NOW()::TIME),no_paciente,no_colegiado,id_centro_medico);
+END;
+$BODY$
+LANGUAGE plpgsql;
