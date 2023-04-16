@@ -239,6 +239,29 @@ CREATE TABLE Inventario_Material(
 		FOREIGN KEY (id_material) REFERENCES Material(id_material)
 );
 
+CREATE TABLE Bitacora_Historial(
+	id_bitacora SERIAL,
+	id_incidencia INT NOT NULL,
+	fecha_hora TIMESTAMP NOT NULL,
+	accion VARCHAR(100) NOT NULL,
+	usuario VARCHAR(30) NOT NULL,
+
+	PRIMARY KEY(id_bitacora),
+	CONSTRAINT fk_incidencia
+		FOREIGN KEY (id_incidencia) REFERENCES Incidencia_Historial_Medico(id_incidencia)
+);
+
+CREATE TABLE Bitacora_Traspaso(
+	id_bitacora SERIAL,
+	cui VARCHAR(20) NOT NULL,
+	fecha_ingreso DATE NOT NULL,
+	fecha_retiro DATE,
+
+	PRIMARY KEY(id_bitacora),
+	CONSTRAINT fk_persona
+		FOREIGN KEY (cui) REFERENCES Persona(cui)
+);
+
 CREATE OR REPLACE PROCEDURE createPaciente(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),direccion VARCHAR(100),telefono VARCHAR(10),id_centro_medico VARCHAR(5), id_estado INT)
 AS $BODY$
 BEGIN
