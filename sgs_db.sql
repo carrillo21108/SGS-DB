@@ -113,7 +113,7 @@ CREATE TABLE Adiccion(
 	id_adiccion SERIAL,
 	nombre VARCHAR(100) NOT NULL,
 	informacion TEXT NOT NULL,
-	mortalidad INT NOT NULL
+	mortalidad INT DEFAULT 0,
 
 	PRIMARY KEY(id_adiccion)
 );
@@ -122,7 +122,7 @@ CREATE TABLE Enfermedad(
 	id_enfermedad SERIAL,
 	nombre VARCHAR(100) NOT NULL,
 	informacion TEXT NOT NULL,
-	mortalidad INT NOT NULL
+	mortalidad INT DEFAULT 0,
 
 	PRIMARY KEY(id_enfermedad)
 );
