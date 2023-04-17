@@ -294,13 +294,13 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION resumen_expediente(no_ INT)
 RETURNS TABLE(fecha_consulta TEXT,hora_consulta TEXT,imc NUMERIC(5,2),altura NUMERIC(5,2),
 			 peso NUMERIC(5,2),medico_tratante TEXT,especialidad_medico VARCHAR(20),
-			  centro_medico_tratante VARCHAR(50)) as
+			  centro_medico_tratante VARCHAR(50),evolucion TEXT,resultado_tratamiento BOOLEAN) as
 $BODY$
 BEGIN
 	RETURN QUERY
 	SELECT i.fecha_consulta::TEXT, TO_CHAR(i.hora_consulta, 'HH12:MI:SS'), i.imc, i.altura, i.peso, 
 	CONCAT(pe.nombre,' ',pe.apellidos) as medico_tratante, e.nombre as especialidad_medico,
-	cm.nombre as centro_medico_tratante
+	cm.nombre as centro_medico_tratante, i.evolucion,i.resultado_tratamiento
 	FROM Incidencia_Historial_Medico i
 		INNER JOIN Centro_Medico cm ON i.id_centro_medico = cm.id_centro_medico
 		INNER JOIN Medico me ON i.no_colegiado = me.no_colegiado
