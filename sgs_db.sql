@@ -389,7 +389,7 @@ BEGIN
     -- Verificar si el registro ya existe
     IF EXISTS(SELECT cui FROM Bitacora_Traspaso WHERE cui = NEW.cui) THEN
         -- Actualizar el registro existente
-        UPDATE Bitacora_Traspaso SET fecha_retiro = NOW()::DATE WHERE cui = NEW.cui;
+        UPDATE Bitacora_Traspaso SET fecha_retiro = NOW()::DATE WHERE id_bitacora = (SELECT id_bitacora FROM Bitacora_Traspaso WHERE cui = NEW.cui ORDER BY id_bitacora DESC LIMIT 1);
     END IF;
     
 	-- Insertar un nuevo registro
