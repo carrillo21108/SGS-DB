@@ -256,6 +256,7 @@ CREATE TABLE Bitacora_Traspaso(
 	cui VARCHAR(20) NOT NULL,
 	fecha_ingreso DATE NOT NULL,
 	fecha_retiro DATE,
+	id_centro_medico VARCHAR(5) NOT NULL,
 
 	PRIMARY KEY(id_bitacora),
 	CONSTRAINT fk_persona
@@ -362,3 +363,39 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION bitacora_historial_trigger() 
+RETURNS TRIGGER AS $$
+DECLARE accion VARCHAR;
+BEGIN
+	IF TG_OP = 'INSERT' THEN
+		accion := 'INSERT';
+	ELSIF TG_OP = 'UPDATE' THEN
+		accion := 'UPDATE';
+	ELSIF TG_OP = 'DELETE' THEN
+		accion := 'DELETE';
+	END IF;
+	INSERT INTO Bitacora_Historial(id_incidencia,fecha_hora,accion,usuario) VALUES (NEW.id_incidencia,NOW(),accion,USER);
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER bitacora_historial_trigger
+AFTER INSERT OR UPDATE OR DELETE ON Incidencia_Historial_Medico
+FOR EACH ROW EXECUTE PROCEDURE bitacora_historial_trigger();
+
+CREATE OR REPLACE FUNCTION verificar_registro() RETURNS TRIGGER AS $$
+BEGIN
+    -- Verificar si el registro ya existe
+    IF EXISTS(SELECT CUI FROM Bitacora_Traspaso WHERE cui = NEW.cui) THEN
+        -- Actualizar el registro existente
+        UPDATE Bitacora_Traspaso SET fecha_retiro = NEW.fecha_retiro WHERE cui = NEW.cui;
+        RETURN NULL;
+    ELSE
+        -- Insertar un nuevo registro
+        INSERT INTO Bitacora_Traspaso (cui, fecha_ingreso, fecha_retiro, id_centro_medico) VALUES (NEW.cui, NEW.fecha_ingreso, NULL, NEW.id_centro_medico);
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
