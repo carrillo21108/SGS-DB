@@ -289,3 +289,76 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION resumen_expediente(no_ INT)
+RETURNS TABLE(fecha_consulta TEXT,hora_consulta TEXT,imc NUMERIC(5,2),altura NUMERIC(5,2),
+			 peso NUMERIC(5,2),medico_tratante TEXT,especialidad_medico VARCHAR(20),
+			  centro_medico_tratante VARCHAR(50)) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT i.fecha_consulta::TEXT, TO_CHAR(i.hora_consulta, 'HH12:MI:SS'), i.imc, i.altura, i.peso, 
+	CONCAT(pe.nombre,' ',pe.apellidos) as medico_tratante, e.nombre as especialidad_medico,
+	cm.nombre as centro_medico_tratante
+	FROM Incidencia_Historial_Medico i
+		INNER JOIN Centro_Medico cm ON i.id_centro_medico = cm.id_centro_medico
+		INNER JOIN Medico me ON i.no_colegiado = me.no_colegiado
+		INNER JOIN Persona pe ON me.cui = pe.cui
+		INNER JOIN Especialidad e ON e.id_especialidad = me.id_especialidad
+	WHERE no_paciente = no_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION enfermedades_incidencia(id_ INT)
+RETURNS TABLE(nombre_enfermedad VARCHAR(100),informacion TEXT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT e.nombre, e.informacion
+	FROM Historial_Enfermedad he
+		INNER JOIN Enfermedad e ON he.id_enfermedad = e.id_enfermedad
+	WHERE id_incidencia = id_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION examenes_incidencia(id_ INT)
+RETURNS TABLE(nombre_examen VARCHAR(100),informacion TEXT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT e.nombre, e.informacion
+	FROM Historial_Examen he
+		INNER JOIN Examen e ON he.id_examen = e.id_examen
+	WHERE id_incidencia = id_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION adicciones_incidencia(id_ INT)
+RETURNS TABLE(nombre_adiccion VARCHAR(100),informacion TEXT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT ad.nombre, ad.informacion
+	FROM Historial_Adiccion ha
+		INNER JOIN Adiccion ad ON ha.id_adiccion = ad.id_adiccion
+	WHERE id_incidencia = id_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION cirugias_incidencia(id_ INT)
+RETURNS TABLE(nombre_cirugia VARCHAR(100),descripcion TEXT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT ci.nombre, ci.descripcion
+	FROM Historial_Cirugia hc
+		INNER JOIN Cirugia ci ON hc.id_cirugia = ci.id_cirugia
+	WHERE id_incidencia = id_;
+END;
+$BODY$
+LANGUAGE plpgsql;
