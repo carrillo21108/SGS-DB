@@ -387,15 +387,18 @@ FOR EACH ROW EXECUTE PROCEDURE bitacora_historial_trigger();
 CREATE OR REPLACE FUNCTION verificar_registro() RETURNS TRIGGER AS $$
 BEGIN
     -- Verificar si el registro ya existe
-    IF EXISTS(SELECT CUI FROM Bitacora_Traspaso WHERE cui = NEW.cui) THEN
+    IF EXISTS(SELECT cui FROM Bitacora_Traspaso WHERE cui = NEW.cui) THEN
         -- Actualizar el registro existente
-        UPDATE Bitacora_Traspaso SET fecha_retiro = NEW.fecha_retiro WHERE cui = NEW.cui;
-        RETURN NULL;
-    ELSE
-        -- Insertar un nuevo registro
-        INSERT INTO Bitacora_Traspaso (cui, fecha_ingreso, fecha_retiro, id_centro_medico) VALUES (NEW.cui, NEW.fecha_ingreso, NULL, NEW.id_centro_medico);
-        RETURN NEW;
+        UPDATE Bitacora_Traspaso SET fecha_retiro = NOW()::DATE WHERE cui = NEW.cui;
     END IF;
+    
+	-- Insertar un nuevo registro
+    INSERT INTO Bitacora_Traspaso (cui, fecha_ingreso, fecha_retiro, id_centro_medico) VALUES (NEW.cui, NOW()::DATE, NULL, NEW.id_centro_medico);
+    RETURN NEW;
+    
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER actualizar_traspaso AFTER INSERT OR UPDATE ON Persona
+FOR EACH ROW EXECUTE FUNCTION verificar_registro();
 
