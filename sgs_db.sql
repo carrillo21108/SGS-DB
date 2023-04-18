@@ -364,6 +364,9 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
+SET my.app_user = 'Ajo del asunto';
+SELECT CURRENT_SETTING('my.app_user');
+
 CREATE OR REPLACE FUNCTION bitacora_historial_trigger() 
 RETURNS TRIGGER AS $$
 DECLARE accion VARCHAR;
@@ -375,7 +378,7 @@ BEGIN
 	ELSIF TG_OP = 'DELETE' THEN
 		accion := 'DELETE';
 	END IF;
-	INSERT INTO Bitacora_Historial(id_incidencia,fecha_hora,accion,usuario) VALUES (NEW.id_incidencia,NOW(),accion,USER);
+	INSERT INTO Bitacora_Historial(id_incidencia,fecha_hora,accion,usuario) VALUES (NEW.id_incidencia,NOW(),accion,CURRENT_SETTING('my.app_user'));
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -401,4 +404,3 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER actualizar_traspaso AFTER INSERT OR UPDATE ON Persona
 FOR EACH ROW EXECUTE FUNCTION verificar_registro();
-
