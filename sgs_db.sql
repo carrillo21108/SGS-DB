@@ -364,6 +364,19 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION tratamiento_incidencia(id_ INT)
+RETURNS TABLE(medicamento_recetado VARCHAR(30),dosis VARCHAR(50)) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT me.descripcion, ht.dosis
+	FROM Historial_Tratamiento ht
+		INNER JOIN Medicamento me ON ht.id_medicamento = me.id_medicamento
+	WHERE id_incidencia = id_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION bitacora_historial_trigger() 
 RETURNS TRIGGER AS $$
 DECLARE accion VARCHAR;
