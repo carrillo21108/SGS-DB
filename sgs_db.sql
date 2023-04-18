@@ -11,7 +11,6 @@ CREATE TABLE Persona(
 	cui VARCHAR(20) NOT NULL,
 	nombre VARCHAR(50) NOT NULL,
 	apellidos VARCHAR(60) NOT NULL,
-	direccion VARCHAR(100) NOT NULL,
 	telefono VARCHAR(10) NOT NULL,
 	id_centro_medico VARCHAR(5) NOT NULL,
 	
@@ -97,7 +96,7 @@ CREATE TABLE Municipio(
 		FOREIGN KEY (id_departamento) REFERENCES Departamento(id_departamento)
 );
 
-CREATE TABLE Direccion(
+CREATE TABLE Direccion_Centro_Medico(
 	id_centro_medico VARCHAR(5) NOT NULL,
 	descripcion VARCHAR(100) NOT NULL,
 	id_municipio INT NOT NULL,
@@ -105,6 +104,18 @@ CREATE TABLE Direccion(
 	PRIMARY KEY(id_centro_medico),
 	CONSTRAINT fk_centro_medico
 		FOREIGN KEY (id_centro_medico) REFERENCES Centro_Medico(id_centro_medico),
+	CONSTRAINT fk_municipio
+		FOREIGN KEY (id_municipio) REFERENCES Municipio(id_municipio)
+);
+
+CREATE TABLE Direccion_Persona(
+	cui VARCHAR(20) NOT NULL,
+	descripcion VARCHAR(100) NOT NULL,
+	id_municipio INT NOT NULL,
+
+	PRIMARY KEY(cui),
+	CONSTRAINT fk_persona
+		FOREIGN KEY (cui) REFERENCES Persona(cui),
 	CONSTRAINT fk_municipio
 		FOREIGN KEY (id_municipio) REFERENCES Municipio(id_municipio)
 );
@@ -244,7 +255,7 @@ CREATE TABLE Bitacora_Historial(
 	id_incidencia INT NOT NULL,
 	fecha_hora TIMESTAMP NOT NULL,
 	accion VARCHAR(100) NOT NULL,
-	usuario VARCHAR(30) NOT NULL,
+	usuario TEXT NOT NULL,
 
 	PRIMARY KEY(id_bitacora),
 	CONSTRAINT fk_incidencia
@@ -377,7 +388,7 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
-SET my.app_user = 'Ajo del asunto';
+SET my.app_user = 'Brian Carrillo';
 SELECT CURRENT_SETTING('my.app_user');
 
 CREATE OR REPLACE FUNCTION bitacora_historial_trigger() 
@@ -396,7 +407,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER bitacora_historial_trigger
+CREATE OR REPLACE TRIGGER bitacora_historial_trigger
 AFTER INSERT OR UPDATE OR DELETE ON Incidencia_Historial_Medico
 FOR EACH ROW EXECUTE PROCEDURE bitacora_historial_trigger();
 
