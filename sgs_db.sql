@@ -364,9 +364,6 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
-SET my.app_user = 'Ajo del asunto';
-SELECT CURRENT_SETTING('my.app_user');
-
 CREATE OR REPLACE FUNCTION tratamiento_incidencia(id_ INT)
 RETURNS TABLE(medicamento_recetado VARCHAR(30),dosis VARCHAR(50)) as
 $BODY$
@@ -379,6 +376,9 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+SET my.app_user = 'Ajo del asunto';
+SELECT CURRENT_SETTING('my.app_user');
 
 CREATE OR REPLACE FUNCTION bitacora_historial_trigger() 
 RETURNS TRIGGER AS $$
