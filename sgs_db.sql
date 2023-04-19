@@ -295,6 +295,15 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
+CREATE OR REPLACE PROCEDURE createCentroMedico(id_centro_medico VARCHAR(5),nombre VARCHAR(50),direccion VARCHAR(100),id_municipio INT)
+AS $BODY$
+BEGIN
+	INSERT INTO Centro_Medico VALUES (id_centro_medico,nombre);
+	INSERT INTO Direccion_Centro_Medico(id_centro_medico,descripcion,id_municipio) VALUES (id_centro_medico,direccion,id_municipio);
+END;
+$BODY$
+LANGUAGE plpgsql;
+
 CREATE OR REPLACE PROCEDURE createIncidencia(imc NUMERIC(5,2),altura NUMERIC(5,2),peso NUMERIC(5,2),no_paciente INT,no_colegiado VARCHAR(20),id_centro_medico VARCHAR(5))
 AS $BODY$
 BEGIN
