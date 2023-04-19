@@ -449,24 +449,36 @@ $BODY$
 LANGUAGE plpgsql;
 
 --Top 10 de las enfermedades mas mortales
-SELECT e.nombre, COUNT(*) as cantidad FROM Historial_Enfermedad he
-	INNER JOIN Enfermedad e ON he.id_enfermedad = e.id_enfermedad
-	INNER JOIN Incidencia_Historial_Medico i ON he.id_incidencia = i.id_incidencia
-	INNER JOIN Paciente p ON i.no_paciente = p.no_paciente
-	INNER JOIN Estado es ON p.id_estado = es.id_estado
-WHERE es.descripcion = 'Fallecido'
-GROUP BY e.nombre
-ORDER BY cantidad DESC
-LIMIT 10;
+CREATE OR REPLACE VIEW FUNCTION top_10_enfermedades()
+RETURNS TABLE(nombre_enfermedad VARCHAR(100),cantidad INT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT e.nombre, COUNT(*) as cantidad FROM Historial_Enfermedad he
+		INNER JOIN Enfermedad e ON he.id_enfermedad = e.id_enfermedad
+		INNER JOIN Incidencia_Historial_Medico i ON he.id_incidencia = i.id_incidencia
+		INNER JOIN Paciente p ON i.no_paciente = p.no_paciente
+		INNER JOIN Estado es ON p.id_estado = es.id_estado
+	WHERE es.descripcion = 'Fallecido'
+	GROUP BY e.nombre
+	ORDER BY cantidad DESC
+	LIMIT 10;
+END;
 
 --Top 10 medicos que mas pacientes han atendido
-SELECT CONCAT(pe.nombre,' ',pe.apellidos) as medico_tratante, COUNT(DISTINCT i.no_paciente) as Pacientes_atendidos 
-FROM Incidencia_Historial_Medico i
-	INNER JOIN Medico me ON i.no_colegiado = me.no_colegiado
-	INNER JOIN Persona pe ON me.cui = pe.cui
-GROUP BY medico_tratante
-ORDER BY Pacientes_atendidos DESC
-LIMIT 10;
+CREATE OR REPLACE FUNCTION top_10_medicos()
+RETURNS TABLE(medico_tratante VARCHAR(100),Pacientes_atendidos INT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT CONCAT(pe.nombre,' ',pe.apellidos) as medico_tratante, COUNT(DISTINCT i.no_paciente) as Pacientes_atendidos 
+	FROM Incidencia_Historial_Medico i
+		INNER JOIN Medico me ON i.no_colegiado = me.no_colegiado
+		INNER JOIN Persona pe ON me.cui = pe.cui
+	GROUP BY medico_tratante
+	ORDER BY Pacientes_atendidos DESC
+	LIMIT 10;
+END;
 
 --Top 5 pacientes con mas asistencia a unidades medicas
 CREATE OR REPLACE FUNCTION top_5_pacientes(id_centro_medico VARCHAR(5))
