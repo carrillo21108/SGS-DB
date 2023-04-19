@@ -449,12 +449,12 @@ $BODY$
 LANGUAGE plpgsql;
 
 --Top 10 de las enfermedades mas mortales
-CREATE OR REPLACE VIEW FUNCTION top_10_enfermedades()
+CREATE OR REPLACE FUNCTION top_10_enfermedades()
 RETURNS TABLE(nombre_enfermedad VARCHAR(100),cantidad INT) as
 $BODY$
 BEGIN
 	RETURN QUERY
-	SELECT e.nombre, COUNT(*) as cantidad FROM Historial_Enfermedad he
+	SELECT e.nombre, COUNT(*)::INT as cantidad FROM Historial_Enfermedad he
 		INNER JOIN Enfermedad e ON he.id_enfermedad = e.id_enfermedad
 		INNER JOIN Incidencia_Historial_Medico i ON he.id_incidencia = i.id_incidencia
 		INNER JOIN Paciente p ON i.no_paciente = p.no_paciente
@@ -464,6 +464,8 @@ BEGIN
 	ORDER BY cantidad DESC
 	LIMIT 10;
 END;
+$BODY$
+LANGUAGE plpgsql;
 
 --Top 10 medicos que mas pacientes han atendido
 CREATE OR REPLACE FUNCTION top_10_medicos()
@@ -479,6 +481,8 @@ BEGIN
 	ORDER BY Pacientes_atendidos DESC
 	LIMIT 10;
 END;
+$BODY$
+LANGUAGE plpgsql;
 
 --Top 5 pacientes con mas asistencia a unidades medicas
 CREATE OR REPLACE FUNCTION top_5_pacientes(id_centro_medico VARCHAR(5))
@@ -494,6 +498,8 @@ BEGIN
 	ORDER BY cantidad DESC
 	LIMIT 5;
 END;
+$BODY$
+LANGUAGE plpgsql;
 
 --Reporte de medicinas y suministros que están por agotarse para una unidad de salud dada
 CREATE OR REPLACE FUNCTION medicinas_agotarse(id_centro_medico VARCHAR(5))
@@ -506,6 +512,9 @@ BEGIN
 		INNER JOIN Medicamento me ON Inventario_Medicamento.id_medicamento = me.id_medicamento
 	WHERE id_centro_medico = id_centro_medico
 		AND disponibilidad < im.capacidad_maxima * 0.15;
+END;
+$BODY$
+LANGUAGE plpgsql;
 
 --Reporte de las 3 unidades medicas que más pacientes atienden
 CREATE OR REPLACE FUNCTION top_3_unidades()
@@ -520,3 +529,5 @@ BEGIN
 	ORDER BY cantidad DESC
 	LIMIT 3;
 END;
+$BODY$
+LANGUAGE plpgsql;
