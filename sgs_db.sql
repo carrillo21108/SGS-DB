@@ -428,3 +428,11 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER actualizar_traspaso AFTER INSERT OR UPDATE ON Persona
 FOR EACH ROW EXECUTE FUNCTION verificar_registro();
+
+CREATE OR REPLACE PROCEDURE updatePaciente(cui_ VARCHAR(20),nombre_ VARCHAR(50),apellidos_ VARCHAR(60),telefono_ VARCHAR(10))
+AS $BODY$
+BEGIN
+	UPDATE Persona SET nombre=nombre_,apellidos=apellidos_,telefono=telefono_ WHERE cui = cui_;
+END;
+$BODY$
+LANGUAGE plpgsql;
