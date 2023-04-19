@@ -231,6 +231,7 @@ CREATE TABLE Inventario_Medicamento(
     id_medicamento INT NOT NULL,
 	disponibilidad INT NOT NULL,
     fecha_caducidad DATE NOT NULL,
+	capacidad_maxima INT NOT NULL,
 	
 	PRIMARY KEY(id_centro_medico,id_medicamento),
 	CONSTRAINT fk_centro_medico
@@ -436,3 +437,64 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+--Top 10 de las enfermedades mas mortales
+SELECT e.nombre, COUNT(*) as cantidad FROM Historial_Enfermedad he
+	INNER JOIN Enfermedad e ON he.id_enfermedad = e.id_enfermedad
+	INNER JOIN Incidencia_Historial_Medico i ON he.id_incidencia = i.id_incidencia
+	INNER JOIN Paciente p ON i.no_paciente = p.no_paciente
+	INNER JOIN Estado es ON p.id_estado = es.id_estado
+WHERE es.descripcion = 'Fallecido'
+GROUP BY e.nombre
+ORDER BY cantidad DESC
+LIMIT 10;
+
+--Top 10 medicos que mas pacientes han atendido
+SELECT CONCAT(pe.nombre,' ',pe.apellidos) as medico_tratante, COUNT(DISTINCT i.no_paciente) as Pacientes_atendidos 
+FROM Incidencia_Historial_Medico i
+	INNER JOIN Medico me ON i.no_colegiado = me.no_colegiado
+	INNER JOIN Persona pe ON me.cui = pe.cui
+GROUP BY medico_tratante
+ORDER BY Pacientes_atendidos DESC
+LIMIT 10;
+
+--Top 5 pacientes con mas asistencia a unidades medicas
+CREATE OR REPLACE FUNCTION top_5_pacientes(id_centro_medico VARCHAR(5))
+RETURNS TABLE(no_paciente INT, nombre_paciente VARCHAR(100), cantidad INT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT i.no_paciente, CONCAT(p.nombre,' ',p.apellidos) as nombre_paciente, COUNT(*) as cantidad
+	FROM Incidencia_Historial_Medico i
+		INNER JOIN Paciente p ON i.no_paciente = p.no_paciente
+	WHERE i.id_centro_medico = id_centro_medico
+	GROUP BY i.no_paciente, nombre_paciente
+	ORDER BY cantidad DESC
+	LIMIT 5;
+END;
+
+--Reporte de medicinas y suministros que están por agotarse para una unidad de salud dada
+CREATE OR REPLACE FUNCTION medicinas_agotarse(id_centro_medico VARCHAR(5))
+RETURNS TABLE(nombre_medicamento VARCHAR(100),cantidad INT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT me.descripcion, im.disponibilidad
+	FROM Inventario_Medicamento
+		INNER JOIN Medicamento me ON Inventario_Medicamento.id_medicamento = me.id_medicamento
+	WHERE id_centro_medico = id_centro_medico
+		AND disponibilidad < im.capacidad_maxima * 0.15;
+
+--Reporte de las 3 unidades medicas que más pacientes atienden
+CREATE OR REPLACE FUNCTION top_3_unidades()
+RETURNS TABLE(id_centro_medico VARCHAR(5),nombre_centro_medico VARCHAR(100),cantidad INT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT i.id_centro_medico, cm.nombre, COUNT(DISTINCT i.no_paciente) as cantidad
+	FROM Incidencia_Historial_Medico i
+		INNER JOIN Centro_Medico cm ON i.id_centro_medico = cm.id_centro_medico
+	GROUP BY i.id_centro_medico, nombre
+	ORDER BY cantidad DESC
+	LIMIT 3;
+END;
