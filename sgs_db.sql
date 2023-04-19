@@ -275,21 +275,22 @@ CREATE TABLE Bitacora_Traspaso(
 		FOREIGN KEY (cui) REFERENCES Persona(cui)
 );
 
-CREATE OR REPLACE PROCEDURE createPaciente(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),direccion VARCHAR(100),telefono VARCHAR(10),id_centro_medico VARCHAR(5), id_estado INT)
+CREATE OR REPLACE PROCEDURE createPaciente(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),telefono VARCHAR(10),id_centro_medico VARCHAR(5), id_estado INT,direccion VARCHAR(100),id_municipio INT)
 AS $BODY$
 BEGIN
-    INSERT INTO Persona VALUES(cui,nombre,apellidos,direccion,telefono,id_centro_medico);
+    INSERT INTO Persona VALUES(cui,nombre,apellidos,telefono,id_centro_medico);
 	INSERT INTO Paciente(cui,id_estado) VALUES (cui,id_estado);
+	INSERT INTO Direccion_Persona(cui,descripcion,id_municipio) VALUES (cui,direccion,id_municipio);
 END;
 $BODY$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE PROCEDURE createMedico(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),direccion VARCHAR(100),telefono VARCHAR(10),
-										 id_centro_medico VARCHAR(5),no_colegiado VARCHAR(20),id_especialidad INT,usuario VARCHAR (10), clave VARCHAR(10))
+CREATE OR REPLACE PROCEDURE createMedico(cui VARCHAR(20),nombre VARCHAR(50),apellidos VARCHAR(60),telefono VARCHAR(10),id_centro_medico VARCHAR(5),no_colegiado VARCHAR(20),id_especialidad INT,usuario VARCHAR (10), clave VARCHAR(10),direccion VARCHAR(100),id_municipio INT)
 AS $BODY$
 BEGIN
-    INSERT INTO Persona VALUES(cui,nombre,apellidos,direccion,telefono,id_centro_medico);
+    INSERT INTO Persona VALUES(cui,nombre,apellidos,telefono,id_centro_medico);
 	INSERT INTO Medico VALUES (no_colegiado,cui,id_especialidad,usuario,clave);
+	INSERT INTO Direccion_Persona(cui,descripcion,id_municipio) VALUES (cui,direccion,id_municipio);
 END;
 $BODY$
 LANGUAGE plpgsql;
