@@ -453,7 +453,7 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION getPatient(cui_ INT)
+CREATE OR REPLACE FUNCTION getPatient(cui_ VARCHAR(20))
 RETURNS TABLE(no_paciente INT,cui VARCHAR(20),no_paciente_padre INT,no_paciente_madre INT,id_estado INT,
 			 nombre VARCHAR(50),apellidos VARCHAR(60),telefono VARCHAR(10),id_centro_medico VARCHAR(5)) as
 $BODY$
@@ -464,6 +464,30 @@ BEGIN
 	FROM Paciente pa
 		INNER JOIN Persona pe ON pa.cui = pe.cui
 	WHERE pa.cui = cui_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE updateMedico(cui_ VARCHAR(20),nombre_ VARCHAR(50),apellidos_ VARCHAR(60),telefono_ VARCHAR(10),
+										   id_centro_medico_ VARCHAR(5),id_especialidad_ INT)
+AS $BODY$
+BEGIN
+	UPDATE Persona SET nombre=nombre_,apellidos=apellidos_,telefono=telefono_,id_centro_medico=id_centro_medico_ WHERE cui = cui_;
+	UPDATE Medico SET id_especialidad=id_especialidad_ WHERE cui=cui_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getMedico(cui_ VARCHAR(20))
+RETURNS TABLE(no_colegiado VARCHAR(20),cui VARCHAR(20),id_especialidad INT,
+			  nombre VARCHAR(50),apellidos VARCHAR(60),telefono VARCHAR(10),id_centro_medico VARCHAR(5))as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT me.no_colegiado,me.cui,me.id_especialidad,pe.nombre,pe.apellidos,pe.telefono,pe.id_centro_medico
+	FROM Medico me
+		INNER JOIN Persona pe ON me.cui = pe.cui
+	WHERE me.cui = cui_;
 END;
 $BODY$
 LANGUAGE plpgsql;
