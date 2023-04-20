@@ -424,14 +424,17 @@ FOR EACH ROW EXECUTE PROCEDURE bitacora_historial_trigger();
 
 CREATE OR REPLACE FUNCTION verificar_registro() RETURNS TRIGGER AS $$
 BEGIN
-    -- Verificar si el registro ya existe
-    IF EXISTS(SELECT cui FROM Bitacora_Traspaso WHERE cui = NEW.cui) THEN
-        -- Actualizar el registro existente
-        UPDATE Bitacora_Traspaso SET fecha_retiro = NOW()::DATE WHERE id_bitacora = (SELECT id_bitacora FROM Bitacora_Traspaso WHERE cui = NEW.cui ORDER BY id_bitacora DESC LIMIT 1);
-    END IF;
-    
-	-- Insertar un nuevo registro
-    INSERT INTO Bitacora_Traspaso (cui, fecha_ingreso, fecha_retiro, id_centro_medico) VALUES (NEW.cui, NOW()::DATE, NULL, NEW.id_centro_medico);
+	IF (NEW.id_centro_medico != OLD.id_centro_medico) THEN
+		-- Verificar si el registro ya existe
+		IF EXISTS(SELECT cui FROM Bitacora_Traspaso WHERE cui = NEW.cui) THEN
+			-- Actualizar el registro existente
+			UPDATE Bitacora_Traspaso SET fecha_retiro = NOW()::DATE WHERE id_bitacora = (SELECT id_bitacora FROM Bitacora_Traspaso WHERE cui = NEW.cui ORDER BY id_bitacora DESC LIMIT 1);
+		END IF;
+		
+		-- Insertar un nuevo registro
+		INSERT INTO Bitacora_Traspaso (cui, fecha_ingreso, fecha_retiro, id_centro_medico) VALUES (NEW.cui, NOW()::DATE, NULL, NEW.id_centro_medico);
+	END IF;
+
     RETURN NEW;
     
 END;
@@ -440,10 +443,27 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER actualizar_traspaso AFTER INSERT OR UPDATE ON Persona
 FOR EACH ROW EXECUTE FUNCTION verificar_registro();
 
-CREATE OR REPLACE PROCEDURE updatePaciente(cui_ VARCHAR(20),nombre_ VARCHAR(50),apellidos_ VARCHAR(60),telefono_ VARCHAR(10))
+CREATE OR REPLACE PROCEDURE updatePaciente(cui_ VARCHAR(20),nombre_ VARCHAR(50),apellidos_ VARCHAR(60),telefono_ VARCHAR(10),
+										   id_centro_medico_ VARCHAR(5),id_estado_ INT)
 AS $BODY$
 BEGIN
-	UPDATE Persona SET nombre=nombre_,apellidos=apellidos_,telefono=telefono_ WHERE cui = cui_;
+	UPDATE Persona SET nombre=nombre_,apellidos=apellidos_,telefono=telefono_,id_centro_medico=id_centro_medico_ WHERE cui = cui_;
+	UPDATE Paciente SET id_estado=id_estado_ WHERE cui=cui_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getPatient(cui_ INT)
+RETURNS TABLE(no_paciente INT,cui VARCHAR(20),no_paciente_padre INT,no_paciente_madre INT,id_estado INT,
+			 nombre VARCHAR(50),apellidos VARCHAR(60),telefono VARCHAR(10),id_centro_medico VARCHAR(5)) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT pa.no_paciente,pa.cui,pa.no_paciente_padre,pa.no_paciente_madre,pa.id_estado,
+	pe.nombre,pe.apellidos,pe.telefono,pe.id_centro_medico
+	FROM Paciente pa
+		INNER JOIN Persona pe ON pa.cui = pe.cui
+	WHERE pa.cui = cui_;
 END;
 $BODY$
 LANGUAGE plpgsql;
