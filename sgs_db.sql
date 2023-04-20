@@ -568,3 +568,5 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+CREATE INDEX idx_estado_descripcion ON Estado (descripcion);
