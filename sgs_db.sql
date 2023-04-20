@@ -576,3 +576,21 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+--Recuperar pacientes que no coincidan con el mismo numero de cui
+CREATE OR REPLACE FUNCTION getPosiblesPadres(id_ VARCHAR(20))
+RETURNS TABLE(no_paciente INT,cui VARCHAR(20),no_paciente_padre INT,no_paciente_madre INT,id_estado INT,
+			 nombre VARCHAR(50),apellidos VARCHAR(60),telefono VARCHAR(10),id_centro_medico VARCHAR(5)) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT pa.no_paciente,pa.cui,pa.no_paciente_padre,pa.no_paciente_madre,pa.id_estado,
+	pe.nombre,pe.apellidos,pe.telefono,pe.id_centro_medico
+	FROM Paciente pa
+		INNER JOIN Persona pe ON pa.cui = pe.cui
+	WHERE pa.cui != id_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE INDEX idx_estado_descripcion ON Estado (descripcion);
