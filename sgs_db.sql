@@ -444,11 +444,11 @@ CREATE TRIGGER actualizar_traspaso AFTER INSERT OR UPDATE ON Persona
 FOR EACH ROW EXECUTE FUNCTION verificar_registro();
 
 CREATE OR REPLACE PROCEDURE updatePaciente(cui_ VARCHAR(20),nombre_ VARCHAR(50),apellidos_ VARCHAR(60),telefono_ VARCHAR(10),
-										   id_centro_medico_ VARCHAR(5),id_estado_ INT)
+										   id_centro_medico_ VARCHAR(5),id_estado_ INT,no_paciente_padre_ INT,no_paciente_madre_ INT)
 AS $BODY$
 BEGIN
 	UPDATE Persona SET nombre=nombre_,apellidos=apellidos_,telefono=telefono_,id_centro_medico=id_centro_medico_ WHERE cui = cui_;
-	UPDATE Paciente SET id_estado=id_estado_ WHERE cui=cui_;
+	UPDATE Paciente SET id_estado=id_estado_,no_paciente_padre=no_paciente_padre_,no_paciente_madre=no_paciente_madre_ WHERE cui=cui_;
 END;
 $BODY$
 LANGUAGE plpgsql;
