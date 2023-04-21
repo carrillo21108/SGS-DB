@@ -658,8 +658,6 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
-CREATE INDEX idx_estado_descripcion ON Estado (descripcion);
-
 --Bitacora historial
 CREATE OR REPLACE FUNCTION bitacora_historial()
 RETURNS TABLE(id_bit INT, id_inc INT,fecha_h TIMESTAMP, descripcion VARCHAR(100), userio TEXT) as
@@ -683,3 +681,5 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+CREATE INDEX idx_estado_descripcion ON Estado (descripcion);
