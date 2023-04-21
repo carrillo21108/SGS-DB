@@ -539,7 +539,7 @@ $BODY$
 LANGUAGE plpgsql;
 
 --Top 5 pacientes con mas asistencia a unidades medicas
-CREATE OR REPLACE FUNCTION top_5_pacientes(id_ VARCHAR(5))
+CREATE OR REPLACE FUNCTION listado_top_5_pacientes(id_ VARCHAR(5))
 RETURNS TABLE(no_paciente INT, nombre_paciente TEXT, cantidad INT) as
 $BODY$
 BEGIN
@@ -552,6 +552,22 @@ BEGIN
 	GROUP BY i.no_paciente, nombre_paciente
 	ORDER BY cantidad DESC
 	LIMIT 5;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION top_5_pacientes(id_ VARCHAR(5))
+RETURNS TABLE(no_paciente INT, nombre_paciente TEXT, cantidad INT, imc_reciente NUMERIC(5,2),
+			 peso_reciente NUMERIC(5,2),altura_reciente NUMERIC(5,2)) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT
+	q.no_paciente, q.nombre_paciente, q.cantidad,i.imc,i.peso,i.altura
+	FROM Incidencia_Historial_Medico i
+		INNER JOIN listado_top_5_pacientes(id_) q ON i.no_paciente = q.no_paciente
+	WHERE i.id_incidencia IN (SELECT obtenerUltimaIncidencia(pa.no_paciente) FROM Paciente pa)
+	ORDER BY cantidad DESC;
 END;
 $BODY$
 LANGUAGE plpgsql;
@@ -692,5 +708,39 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+--Trigger para actualizar la mortalidad de la enfermedad
+CREATE OR REPLACE FUNCTION actualizar_mortalidad()
+RETURNS TRIGGER AS $$
+DECLARE
+	id_ INT;
+	contador INT;
+BEGIN
+	--Considerando que el estado de fallecido es 2
+	IF (NEW.id_estado = 2) THEN
+		--Obtener la enfermedad y la mortalidad
+		id_ := (SELECT e.id_enfermedad
+				FROM Historial_Enfermedad he
+					INNER JOIN Enfermedad e ON he.id_enfermedad = e.id_enfermedad
+					INNER JOIN Incidencia_Historial_Medico i ON he.id_incidencia = i.id_incidencia
+				WHERE i.id_incidencia = (SELECT * FROM obtenerUltimaIncidencia(NEW.no_paciente)));
+		
+		contador := (SELECT e.mortalidad
+					 FROM Historial_Enfermedad he
+						INNER JOIN Enfermedad e ON he.id_enfermedad = e.id_enfermedad
+						INNER JOIN Incidencia_Historial_Medico i ON he.id_incidencia = i.id_incidencia
+					WHERE i.id_incidencia = (SELECT * FROM obtenerUltimaIncidencia(NEW.no_paciente)));
+
+		--Actualizar la tabla de enfermedad
+		UPDATE Enfermedad SET mortalidad = contador+1 WHERE id_enfermedad = id_;
+	END IF;
+
+    RETURN NEW;
+END;
+$$ 
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER actualizar_mortalidad AFTER INSERT OR UPDATE ON Paciente
+FOR EACH ROW EXECUTE FUNCTION actualizar_mortalidad();
 
 CREATE INDEX idx_estado_descripcion ON Estado (descripcion);
