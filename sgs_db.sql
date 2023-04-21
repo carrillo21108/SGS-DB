@@ -567,7 +567,9 @@ BEGIN
 	FROM Inventario_Medicamento im
 		INNER JOIN Medicamento me ON im.id_medicamento = me.id_medicamento
 	WHERE id_centro_medico = id_
-		AND disponibilidad < im.capacidad_maxima * 0.15;
+		AND disponibilidad < im.capacidad_maxima * 0.15
+		AND EXTRACT(year FROM im.fecha_caducidad)=EXTRACT(year FROM NOW())
+		AND EXTRACT(month FROM im.fecha_caducidad)=EXTRACT(month FROM NOW());
 END;
 $BODY$
 LANGUAGE plpgsql;
