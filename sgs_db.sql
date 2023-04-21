@@ -631,3 +631,27 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+--Bitacora historial
+CREATE OR REPLACE FUNCTION bitacora_historial()
+RETURNS TABLE(id_bit INT, id_inc INT,fecha_h TIMESTAMP, descripcion VARCHAR(100), userio TEXT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT id_bitacora,id_incidencia,fecha_hora,accion,usuario
+	FROM bitacora_historial;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+--Bitacora traspaso
+CREATE OR REPLACE FUNCTION bitacora_traspaso()
+RETURNS TABLE(id_bit INT, cuit VARCHAR(20), fecha_i DATE, fecha_r DATE, id_cm VARCHAR(5)) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT id_bitacora,cui,fecha_ingreso,fecha_retiro,id_centro_medico
+	FROM bitacora_traspaso;
+END;
+$BODY$
+LANGUAGE plpgsql;
