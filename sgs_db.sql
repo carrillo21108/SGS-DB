@@ -644,6 +644,20 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
+--Inventario de medicamentos por unidad de salud
+CREATE OR REPLACE FUNCTION inventario_materiales(id_ VARCHAR(5))
+RETURNS TABLE(id_material INT,descripcion VARCHAR(100),disponibilidad INT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT im.id_material, ma.descripcion, im.disponibilidad
+	FROM Inventario_Material im
+		INNER JOIN Material ma ON im.id_material = ma.id_material
+	WHERE id_centro_medico = id_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
 CREATE INDEX idx_estado_descripcion ON Estado (descripcion);
 
 --Bitacora historial
