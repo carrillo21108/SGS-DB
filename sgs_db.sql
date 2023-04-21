@@ -320,7 +320,7 @@ RETURNS TABLE(fecha_consulta TEXT,hora_consulta TEXT,imc NUMERIC(5,2),altura NUM
 $BODY$
 BEGIN
 	RETURN QUERY
-	SELECT i.fecha_consulta::TEXT, TO_CHAR(i.hora_consulta, 'HH12:MI:SS'), i.imc, i.altura, i.peso, 
+	SELECT i.fecha_consulta::TEXT, TO_CHAR(i.hora_consulta, 'HH24:MI:SS'), i.imc, i.altura, i.peso, 
 	CONCAT(pe.nombre,' ',pe.apellidos) as medico_tratante, e.nombre as especialidad_medico,
 	cm.nombre as centro_medico_tratante, i.evolucion,i.resultado_tratamiento
 	FROM Incidencia_Historial_Medico i
@@ -589,6 +589,20 @@ BEGIN
 	FROM Paciente pa
 		INNER JOIN Persona pe ON pa.cui = pe.cui
 	WHERE pa.cui != id_;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getPosiblesMedicos()
+RETURNS TABLE(no_colegiado VARCHAR(20),cui VARCHAR(20),
+			 nombre VARCHAR(50),apellidos VARCHAR(60),telefono VARCHAR(10),id_centro_medico VARCHAR(5)) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT me.no_colegiado,me.cui,
+	pe.nombre,pe.apellidos,pe.telefono,pe.id_centro_medico
+	FROM Medico me
+		INNER JOIN Persona pe ON me.cui = pe.cui;
 END;
 $BODY$
 LANGUAGE plpgsql;
