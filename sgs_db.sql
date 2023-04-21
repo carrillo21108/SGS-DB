@@ -492,17 +492,28 @@ $BODY$
 LANGUAGE plpgsql;
 
 --Top 10 de las enfermedades mas mortales
+CREATE OR REPLACE FUNCTION obtenerUltimaIncidencia(no_ INT)
+RETURNS TABLE(id_incidencia INT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT i.id_incidencia FROM Incidencia_Historial_Medico i WHERE i.no_paciente = no_ ORDER BY i.id_incidencia DESC LIMIT 1;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION top_10_enfermedades()
 RETURNS TABLE(nombre_enfermedad VARCHAR(100),cantidad INT) as
 $BODY$
 BEGIN
 	RETURN QUERY
-	SELECT e.nombre, COUNT(*)::INT as cantidad FROM Historial_Enfermedad he
+	SELECT e.nombre, COUNT(*)::INT as cantidad
+	FROM Historial_Enfermedad he
 		INNER JOIN Enfermedad e ON he.id_enfermedad = e.id_enfermedad
 		INNER JOIN Incidencia_Historial_Medico i ON he.id_incidencia = i.id_incidencia
 		INNER JOIN Paciente p ON i.no_paciente = p.no_paciente
 		INNER JOIN Estado es ON p.id_estado = es.id_estado
-	WHERE es.descripcion = 'Fallecido'
+	WHERE es.descripcion ILIKE 'Fallecido' AND i.id_incidencia IN (SELECT obtenerUltimaIncidencia(no_paciente) FROM Paciente)
 	GROUP BY e.nombre
 	ORDER BY cantidad DESC
 	LIMIT 10;
@@ -512,7 +523,7 @@ LANGUAGE plpgsql;
 
 --Top 10 medicos que mas pacientes han atendido
 CREATE OR REPLACE FUNCTION top_10_medicos()
-RETURNS TABLE(medico_tratante TEXT,Pacientes_atendidos INT) as
+RETURNS TABLE(medico_tratante TEXT,pacientes_atendidos INT) as
 $BODY$
 BEGIN
 	RETURN QUERY
