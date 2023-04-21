@@ -546,6 +546,17 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
+--Nombre de medicamentos
+CREATE OR REPLACE FUNCTION nombre_medicamentos()
+RETURNS TABLE(id_medicina INT, nombre_medicamento VARCHAR(30)) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT * FROM Medicamento;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
 --Reporte de medicinas y suministros que están por agotarse para una unidad de salud dada
 CREATE OR REPLACE FUNCTION medicinas_agotarse(id_ VARCHAR(5))
 RETURNS TABLE(nombre_medicamento VARCHAR(100),cantidad INT) as
