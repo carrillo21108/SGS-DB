@@ -314,13 +314,13 @@ $BODY$
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION resumen_expediente(no_ INT)
-RETURNS TABLE(fecha_consulta TEXT,hora_consulta TEXT,imc NUMERIC(5,2),altura NUMERIC(5,2),
+RETURNS TABLE(id_incidencia INT,fecha_consulta TEXT,hora_consulta TEXT,imc NUMERIC(5,2),altura NUMERIC(5,2),
 			 peso NUMERIC(5,2),medico_tratante TEXT,especialidad_medico VARCHAR(20),
 			  centro_medico_tratante VARCHAR(50),evolucion TEXT,resultado_tratamiento BOOLEAN) as
 $BODY$
 BEGIN
 	RETURN QUERY
-	SELECT i.fecha_consulta::TEXT, TO_CHAR(i.hora_consulta, 'HH24:MI:SS'), i.imc, i.altura, i.peso, 
+	SELECT i.id_incidencia,i.fecha_consulta::TEXT, TO_CHAR(i.hora_consulta, 'HH24:MI:SS'), i.imc, i.altura, i.peso, 
 	CONCAT(pe.nombre,' ',pe.apellidos) as medico_tratante, e.nombre as especialidad_medico,
 	cm.nombre as centro_medico_tratante, i.evolucion,i.resultado_tratamiento
 	FROM Incidencia_Historial_Medico i
@@ -332,7 +332,6 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql;
-
 
 CREATE OR REPLACE FUNCTION enfermedades_incidencia(id_ INT)
 RETURNS TABLE(nombre_enfermedad VARCHAR(100),informacion TEXT) as
@@ -557,19 +556,29 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
---Reporte de medicinas y suministros que están por agotarse para una unidad de salud dada
-CREATE OR REPLACE FUNCTION medicinas_agotarse(id_ VARCHAR(5))
-RETURNS TABLE(nombre_medicamento VARCHAR(100),cantidad INT) as
+--Nombre de materiales
+CREATE OR REPLACE FUNCTION nombre_materiales()
+RETURNS TABLE(id_material INT, nombre_material VARCHAR(100)) as
 $BODY$
 BEGIN
 	RETURN QUERY
-	SELECT me.descripcion, im.disponibilidad
+	SELECT * FROM Material;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+--Reporte de medicinas y suministros que están por agotarse para una unidad de salud dada
+CREATE OR REPLACE FUNCTION medicinas_agotarse(id_ VARCHAR(5))
+RETURNS TABLE(id_medicamento INT,descripcion VARCHAR(30),disponibilidad INT,fecha_caducidad TEXT,capacidad_maxima INT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT im.id_medicamento,me.descripcion,im.disponibilidad,im.fecha_caducidad::TEXT,im.capacidad_maxima
 	FROM Inventario_Medicamento im
 		INNER JOIN Medicamento me ON im.id_medicamento = me.id_medicamento
-	WHERE id_centro_medico = id_
-		AND disponibilidad < im.capacidad_maxima * 0.15
-		AND EXTRACT(year FROM im.fecha_caducidad)=EXTRACT(year FROM NOW())
-		AND EXTRACT(month FROM im.fecha_caducidad)=EXTRACT(month FROM NOW());
+	WHERE im.id_centro_medico = id_
+		AND (im.disponibilidad < im.capacidad_maxima * 0.15
+		OR (im.fecha_caducidad<=NOW()));
 END;
 $BODY$
 LANGUAGE plpgsql;
@@ -622,14 +631,17 @@ LANGUAGE plpgsql;
 
 --Inventario de medicamentos por unidad de salud
 CREATE OR REPLACE FUNCTION inventario_medicamentos(id_ VARCHAR(5))
-RETURNS TABLE(id_medicamento INT,descripcion VARCHAR(100),disponibilidad INT,capacidad_maxima INT) as
+RETURNS TABLE(id_medicamento INT,descripcion VARCHAR(100),disponibilidad INT,fecha_caducidad TEXT,capacidad_maxima INT) as
 $BODY$
 BEGIN
 	RETURN QUERY
-	SELECT im.id_medicamento, me.descripcion, im.disponibilidad, im.capacidad_maxima
+	SELECT im.id_medicamento, me.descripcion, im.disponibilidad,
+	im.fecha_caducidad::TEXT,im.capacidad_maxima
 	FROM Inventario_Medicamento im
 		INNER JOIN Medicamento me ON im.id_medicamento = me.id_medicamento
 	WHERE id_centro_medico = id_;
 END;
 $BODY$
 LANGUAGE plpgsql;
+
+CREATE INDEX idx_estado_descripcion ON Estado (descripcion);
