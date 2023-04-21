@@ -618,4 +618,16 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
-CREATE INDEX idx_estado_descripcion ON Estado (descripcion);
+--Inventario de medicamentos por unidad de salud
+CREATE OR REPLACE FUNCTION inventario_medicamentos(id_ VARCHAR(5))
+RETURNS TABLE(id_medicamento INT,descripcion VARCHAR(100),disponibilidad INT,capacidad_maxima INT) as
+$BODY$
+BEGIN
+	RETURN QUERY
+	SELECT im.id_medicamento, me.descripcion, im.disponibilidad, im.capacidad_maxima
+	FROM Inventario_Medicamento im
+		INNER JOIN Medicamento me ON im.id_medicamento = me.id_medicamento
+	WHERE id_centro_medico = id_;
+END;
+$BODY$
+LANGUAGE plpgsql;
