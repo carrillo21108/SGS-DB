@@ -423,7 +423,7 @@ FOR EACH ROW EXECUTE PROCEDURE bitacora_historial_trigger();
 
 CREATE OR REPLACE FUNCTION verificar_registro() RETURNS TRIGGER AS $$
 BEGIN
-	IF (NEW.id_centro_medico != OLD.id_centro_medico) THEN
+	IF (NEW.id_centro_medico != OLD.id_centro_medico OR OLD.id_centro_medico IS NULL) THEN
 		-- Verificar si el registro ya existe
 		IF EXISTS(SELECT cui FROM Bitacora_Traspaso WHERE cui = NEW.cui) THEN
 			-- Actualizar el registro existente
